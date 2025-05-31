@@ -31,6 +31,7 @@ The system is built with a selection of modern, efficient libraries and tools:
 ## Prerequisites
 
 Before you begin, ensure you have the following installed:
+
 * Python 3.8+
 * Git
 
@@ -38,36 +39,36 @@ Before you begin, ensure you have the following installed:
 
 Follow these steps to set up the project locally.
 
-**1. Clone the Repository**
+### 1. Clone the Repository
 
 ```bash
 git clone [repository-url](https://github.com/bsbhadwal/rag_qa_pipeline.git)
 cd <repository-directory>
 ```
 
-**2. Create a Virtual Environment**
+### 2. Create a Virtual Environment
 
 It is highly recommended to use a virtual environment to manage dependencies.
 
 ```bash
 # For Unix/macOS
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv ./.venv
+source ./.venv/bin/activate
 
 # For Windows
-python -m venv venv
-.\venv\Scripts\activate
+python -m venv ./.venv
+.\.venv\Scripts\activate
 ```
 
-**3. Install Dependencies**
+### 3. Install Dependencies
 
-Install the required Python libraries. This will be time consuming as it installs NVIDIA/CUDA specific libs too. 
+Install the required Python libraries. This will be time consuming as it installs NVIDIA/CUDA specific libs too.
 
 ```bash
 pip install -r requirements.txt
 ```
 
-**4. Set Up Environment Variables**
+### 4. Set Up Environment Variables
 
 The application uses a Google Gemini model for LLM tasks and requires an API key.
 
@@ -99,26 +100,27 @@ python3 pipeline.py
 
 This script will:
 
-1. Clone the repository specified in `config.py` into the `pipeline_outputs/cloned_repo` directory.
-2. Extract code chunks from the repository files.
-3. Generate LLM-powered summaries for each chunk.
+1. Clone the repository specified in `config.py` defaults to the `pipeline_outputs/cloned_repo` directory.
+2. Extract code chunks from the repository files. Caches to default `pipeline_outputs/pipeline_cached_data`
+3. Generate LLM-powered summaries for each chunk. `pipeline_outputs/pipeline_cached_data`
 4. Embed and store these hybrid chunks in a persistent ChromaDB vector store located at `pipeline_outputs/chroma_db_persistent`.
-5. Runs a set of default questions against the newly built index if any are defined in `config.py`. By default we have a set of over 20 Questions sorted from easy to hard that establishes what questions the RAG system can handle. The system also provides references for the answer with their score.
+5. Runs a set of default questions against the newly built index if any are defined in `config.py`. By default we have a set of over 20 Questions sorted from easy to hard that establishes what questions the RAG system can handle. The system also provides **references** for the answer along with their **relevance score**.
 
-**Note:** This process can take some time, especially the first time you run it, as it involves LLM calls to summarize every code chunk (Plus delay to stay within free tier). 
+**Note:** This process can take some time, especially the first time you run it, as it involves LLM calls to summarize every code chunk (Plus delay to stay within free tier).  
+
 ( All tasks outputs are cached on file system which adds redundancy / saves processing time. Subsequent runs will use the cached index.)
 
-**Command Line Only** There is no need to run the web UI to simply answer questions, you can do it via command line. Simply add your repository and set of questions to the config.py.
+**Command Line Only** There is no need to run the web UI to simply answer questions, you can do it via command line. Simply add your preferred repository and set of questions to the `config.py`.
 
 ### Step 2: Run the Web Application
 
 Once the index is built, you can start the interactive web UI.
 
 ```bash
-python3 app.py
+python3 web/app.py
 ```
 
-This will start a Flask development server, at `http://127.0.0.1:5001`. On the first request, the application will load the models and the pre-built index from disk.
+This will start a Flask development server, at `http://localhost:5001`. On the first request, the application will load the models and the pre-built index from disk. 5001 was chosen so it doesnt interfere with any existing flask applications that run at port :5000
 
 Navigate to this URL in your web browser. You can now ask questions about the codebase.
 
@@ -126,13 +128,14 @@ Navigate to this URL in your web browser. You can now ask questions about the co
 
 1. Open your web browser to the application's URL.
 2. In the text area, type a question about the codebase. Examples include:
+
   * `What does the <function_name> do?`
   * `Explain how a <feature> works?`
   * `What is the return type of <function>?`
 (See config.py for a comprehensive list of questions)
 
 3. Click the "Get Answer" button.
-4. The system will display the generated answer along with the source file references that were used as context.
+4. The system will display the generated answer along with the source file references and their relevance score that were used as context.
 
 ## Project Structure
 
@@ -163,9 +166,9 @@ The project is highly configurable through the `config.py` file. You can easily 
 
 ## To work with a New Github Repository
 
-- Delete existing Output Directory (defined in confiig.py). Default: BASE_OUTPUT_DIR_NAME = "pipeline_outputs"
-- Change the Github repository URL in the config.py. DEFAULT_REPO_URL=new_github_public_repo_url
-- Run pipeline.py. This will recreate the output directory/cache with the new Github Repository. 
+* Delete existing Output Directory (defined in confiig.py). Default: BASE_OUTPUT_DIR_NAME = "pipeline_outputs"
+* Change the Github repository URL in the config.py. DEFAULT_REPO_URL=new_github_public_repo_url
+* Run pipeline.py. This will recreate the output directory/cache with the new Github Repository.
 
 ## Testing
 

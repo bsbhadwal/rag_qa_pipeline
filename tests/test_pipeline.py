@@ -160,8 +160,6 @@ class TestModelSetup(unittest.TestCase):
         if "nomic" in "test_embed_model":
             MockHuggingFaceEmbedding.assert_called_once_with(
                 model_name="test_embed_model",
-                query_instruction=config.NOMIC_QUERY_INSTRUCTION,
-                text_instruction=config.NOMIC_DOCUMENT_INSTRUCTION,
                 model_kwargs={"trust_remote_code": True},
             )
         else:

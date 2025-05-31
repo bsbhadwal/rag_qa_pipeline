@@ -175,5 +175,5 @@ The project is highly configurable through the `config.py` file. You can easily 
 Unit tests are provided for the core components of the pipeline. To run the tests, execute the `test_pipeline.py` file:
 
 ```bash
-python test_pipeline.py
+python tests/test_pipeline.py
 ```

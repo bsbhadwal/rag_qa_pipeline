@@ -11,10 +11,10 @@ load_dotenv()
 
 # --- API and Model Configuration ---
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-LLM_MODEL_NAME = os.getenv("LLM_MODEL_NAME", "gemini-1.5-flash-latest")
+LLM_MODEL_NAME = os.getenv(
+    "LLM_MODEL_NAME", "gemini-2.0-flash"
+)  # flash models are a good compromise between speed & instruction following. Avoid 2.5 as its still in beta
 EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
-# Switched to Nomic, which has an 8192 token context window.
-# EMBEDDING_MODEL_NAME = "nomic-ai/nomic-embed-text-v1.5"
 
 # --- Base Output Directory ---
 # This will be a subdirectory relative to the script's location.
@@ -43,12 +43,11 @@ LOG_FORMAT = "%(asctime)s - %(levelname)s - %(filename)s:%(lineno)d | %(message)
 LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 # --- Code Processing Configuration ---
-# CODE_SPLITTER_CHUNK_LINES = 10000  # High value to prefer syntactic splitting
-# CODE_SPLITTER_CHUNK_LINES_OVERLAP = 200
-# CODE_SPLITTER_MAX_CHARS = 150000
 CODE_SPLITTER_CHUNK_LINES = 100  # Safe, maintains semantic cohesion
 CODE_SPLITTER_CHUNK_LINES_OVERLAP = 20  # Ensures function context isn't lost
-CODE_SPLITTER_MAX_CHARS = 8000  # Compatible with most embedding/token limits
+CODE_SPLITTER_MAX_CHARS = (
+    8000  # Compatible with most embedding/token limits (nomic is 8196)
+)
 
 FILE_EXTENSION_TO_LANGUAGE_MAP = {
     ".py": "python",
@@ -77,13 +76,17 @@ CHUNKS_FILENAME = "chunks.jsonl"
 HYBRID_CHUNKS_FILENAME = "hybrid_chunks.jsonl"
 
 # --- Operational Parameters ---
-MIN_SLEEP_SEC = 3
-MAX_SLEEP_SEC = 5
-FORCE_REFRESH_DEFAULT = False  # Default for force_refresh flags
+MIN_SLEEP_SEC = (
+    3  # Min sleep duration. We use sleep to stay within Gemini free tier restrictions.
+)
+MAX_SLEEP_SEC = (
+    5  # Max sleep duration. Use sleep to stay within Gemini free tier restrictions.
+)
+FORCE_REFRESH_DEFAULT = False  # Default for force_refresh flags. Refresh flags ignore any locally cached files
 SIMILARITY_TOP_K = 3  # Number of source documents to retrieve for context
 
 # --- Git Clone Configuration ---
-DEFAULT_REPO_URL = "https://github.com/psf/requests.git"
+DEFAULT_REPO_URL = "https://github.com/psf/requests.git"  # default repo url
 
 
 # --- Default Questions for Querying ---

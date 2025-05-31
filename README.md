@@ -41,7 +41,7 @@ Follow these steps to set up the project locally.
 **1. Clone the Repository**
 
 ```bash
-git clone <your-repository-url>
+git clone [repository-url](https://github.com/bsbhadwal/rag_qa_pipeline.git)
 cd <repository-directory>
 ```
 
@@ -61,7 +61,7 @@ python -m venv venv
 
 **3. Install Dependencies**
 
-Install the required Python libraries.
+Install the required Python libraries. This will be time consuming as it installs NVIDIA/CUDA specific libs too. 
 
 ```bash
 pip install -r requirements.txt
@@ -72,10 +72,15 @@ pip install -r requirements.txt
 The application uses a Google Gemini model for LLM tasks and requires an API key.
 
 * Create a file named `.env` in the root directory of the project.
-* Add your Google API key to the file: (MADE AVAILABLE IN EMAIL)
+* Copy the contents from the env.txt file to this file: ( FILE MADE AVAILABLE IN EMAIL)
 
 ```env
-GOOGLE_API_KEY="your_google_api_key_here"
+# Temporary personal API key for prototype use (bsbhadwal) — rate limited to 15 requests/minute and 1500 requests/day.
+# This key will be deactivated in the future. You can generate your own at: https://aistudio.google.com/
+GOOGLE_API_KEY=<YOUR-KEY>
+LLM_MODEL_NAME=<MODEL-NAME>
+#OPTIONAL - keeps chroma db from sending so-called "anonymous" telemetry :P
+ANONYMIZED_TELEMETRY="False"
 ```
 
 ## Running the Application
@@ -84,7 +89,7 @@ There are two main ways to run the system: the full pipeline via the command lin
 
 ### Step 1: Build the Index (One-Time Setup)
 
-Before you can ask questions, you must first process the target repository and build the vector index. The default repository is `psf/requests`.
+Before you can ask questions, you must first process the target repository and build the vector index. The default repository is `psf/requests`. Defined in config.py
 
 Run the main pipeline script from the root directory:
 
@@ -98,9 +103,12 @@ This script will:
 2. Extract code chunks from the repository files.
 3. Generate LLM-powered summaries for each chunk.
 4. Embed and store these hybrid chunks in a persistent ChromaDB vector store located at `pipeline_outputs/chroma_db_persistent`.
-5. Run a set of default questions against the newly built index if any are defined in `config.py`.
+5. Runs a set of default questions against the newly built index if any are defined in `config.py`. By default we have a set of over 20 Questions sorted from easy to hard that establishes what questions the RAG system can handle. The system also provides references for the answer with their score.
 
-**Note:** This process can take some time, especially the first time you run it, as it involves LLM calls to summarize every code chunk. Subsequent runs will use the cached index.
+**Note:** This process can take some time, especially the first time you run it, as it involves LLM calls to summarize every code chunk (Plus delay to stay within free tier). 
+( All tasks outputs are cached on file system which adds redundancy / saves processing time. Subsequent runs will use the cached index.)
+
+**Command Line Only** There is no need to run the web UI to simply answer questions, you can do it via command line. Simply add your repository and set of questions to the config.py.
 
 ### Step 2: Run the Web Application
 
@@ -110,8 +118,7 @@ Once the index is built, you can start the interactive web UI.
 python3 app.py
 ```
 
-
-This will start a Flask development server, typically at `http://127.0.0.1:5001`. On the first request, the application will load the models and the pre-built index from disk.
+This will start a Flask development server, at `http://127.0.0.1:5001`. On the first request, the application will load the models and the pre-built index from disk.
 
 Navigate to this URL in your web browser. You can now ask questions about the codebase.
 
@@ -122,6 +129,8 @@ Navigate to this URL in your web browser. You can now ask questions about the co
   * `What does the <function_name> do?`
   * `Explain how a <feature> works?`
   * `What is the return type of <function>?`
+(See config.py for a comprehensive list of questions)
+
 3. Click the "Get Answer" button.
 4. The system will display the generated answer along with the source file references that were used as context.
 
@@ -151,6 +160,12 @@ The project is highly configurable through the `config.py` file. You can easily 
 * LLM and embedding model names (`LLM_MODEL_NAME`, `EMBEDDING_MODEL_NAME`).
 * Code chunking parameters (`CODE_SPLITTER_CHUNK_LINES`, etc.).
 * Vector store collection name and directory paths.
+
+## To work with a New Github Repository
+
+- Delete existing Output Directory (defined in confiig.py). Default: BASE_OUTPUT_DIR_NAME = "pipeline_outputs"
+- Change the Github repository URL in the config.py. DEFAULT_REPO_URL=new_github_public_repo_url
+- Run pipeline.py. This will recreate the output directory/cache with the new Github Repository. 
 
 ## Testing
 

@@ -182,7 +182,6 @@ These enriched summaries are combined with the original code to form hybrid chun
 * **Proposed Improvement:**
 
   * Use **two separate embedders** for:
-
     * Raw code
     * LLM-generated summaries
   * Store in **separate vector collections**.
@@ -190,7 +189,7 @@ These enriched summaries are combined with the original code to form hybrid chun
 
 * **Parallelization (Out of Scope):**
 
-  * A connection pool using **multiple API keys** and threads can boost indexing speed linearly.
+  * A connection pool using **multiple GOOGLE_AI_API keys** and threads can boost indexing speed linearly.
   * Not suitable for production due to security concerns.
 
 * **Future Evaluation:**
@@ -243,6 +242,55 @@ These enriched summaries are combined with the original code to form hybrid chun
   * Search and filter interface
   * Highlighted code previews
 
+### 7. OOPS enhancements
+Refactoring to an OOP Approach (If the Project Evolves OR avoid premature optimization)
+
+If this project were to grow into a more complex system—perhaps handling multiple repositories, different indexing strategies, more sophisticated state management, or needing to be integrated as a library into a larger application—refactoring to an OOP design would offer several benefits:
+
+- Better State Management: Classes are excellent for encapsulating state and behavior related to specific entities.
+- Improved Encapsulation: Hiding internal implementation details of components.
+- Enhanced Reusability and Extensibility: Easier to create variations of components or extend functionality.
+- Clearer APIs: Well-defined class interfaces can make the system easier to use and maintain.
+
+Here's one way we could structure an OOP version:
+
+- CodebaseManager (or RepositoryIngestor)
+  - Responsibilities: Cloning/updating repositories, finding relevant files based on configured suffixes.
+  - Attributes: repo_url, local_path, file_extensions_map.
+  - Methods: ingest_or_update_repo(), get_code_files() -> List[Path].
+
+- CodeChunker (or SemanticProcessor)
+  - Responsibilities: Taking a code file, splitting it into semantic chunks using the appropriate CodeSplitter, and potentially coordinating the summarization of these chunks.
+  - Attributes: splitter_configs_by_lang (from config.py), llm_for_summarization (injected).
+  - Methods: 
+   chunk_file(file_path: Path, language: str) -> List[Dict], 
+   summarize_chunk_with_llm(code_string: str, file_path: str) -> str, 
+   create_hybrid_chunk(code_chunk: Dict, summary: str) -> Dict.
+
+chunk_file would internally use the correct LlamaIndex CodeSplitter.
+
+- EmbeddingManager
+  - Responsibilities: Initializing and providing the embedding model, handling text/query prefixes if needed (like for Nomic).
+  - Attributes: embed_model_instance (e.g., HuggingFaceEmbedding), query_instruction, document_instruction.
+  - Methods: get_embedding(text: str, for_query: bool = False) -> List[float], get_model() -> HuggingFaceEmbedding.
+
+- VectorStoreManager
+  - Responsibilities: Interacting with ChromaDB (or another vector store). Managing collections, adding documents (with embeddings), and potentially basic querying (though advanced querying might be in a QueryOrchestrator).
+  - Attributes: db_client (e.g., PersistentClient), collection_name, embed_model (from EmbeddingManager).
+  - Methods: add_documents_to_collection(documents: List[Dict]) (handles getting embeddings and adding), load_collection(), ensure_collection_exists().
+
+- RAGQueryEngine
+  - Responsibilities: Taking a user query, interacting with the LlamaIndex VectorStoreIndex (which it might build or load via VectorStoreManager), and synthesizing an answer using the LLM.
+  - Attributes: vector_index (LlamaIndex VectorStoreIndex), llm (for Q&A), qa_prompt_template, similarity_top_k.
+  - Methods: query(question_text: str) -> LlamaResponse. This method would encapsulate the logic currently in query_index.
+
+- PipelineOrchestrator (or RAGManager)
+  - Responsibilities: The main class that ties everything together. It would manage the overall workflow for both building the index and querying.
+  - Attributes: Instances of the above managers/processors, configuration objects.
+  - Methods:
+    initialize_components(config)
+    build_or_load_index(repo_url: str, force_refresh: bool = False): Would use CodebaseManager, CodeChunker, and VectorStoreManager.
+    answer_question(question_text: str) -> LlamaResponse: Would use RAGQueryEngine.
 ---
 
 **Note:**
@@ -252,10 +300,12 @@ The design meets all core requirements under prototyping constraints and provide
 
 ## Time Sheet
 
-Todat time: 1 day / 8 hrs (focussed time)
+Total time to completion : 1/2 allocated day(s) or 8 hrs (focussed time)
 
 1. Understanding requirements - 1 hour
 2. Research problems and possible solutions / prototype - 3.5 hours
 3. Test cases - 1 hour
 4. Coding - 2.5 hours
-5. AI validation code - 1 hour
+5. AI - code validation/fixes and document generation - 1 hour
+
+- received on 30 May 2000 hours | checked-in 31 May 2200 hours 

@@ -1,40 +1,40 @@
-## Design Decisions & Library Choices: RAG-based Code Q\&A System
+# Design Decisions & Library Choices: RAG-based Code Q\&A System
 
-### 1. Problem Statement
+## 1. Problem Statement
 
 Developers often need to understand unfamiliar codebases quickly. Whether for onboarding, debugging, or enhancing functionality, navigating complex repositories is time-consuming and mentally taxing. A system that can ingest a codebase and answer questions about it using natural language would significantly accelerate developer productivity and comprehension.
 
-### 2. Existing Solutions
+## 2. Existing Solutions
 
 A range of tutorials and repos attempt to solve this using RAG (Retrieval-Augmented Generation). A typical example:
 *[Build a RAG System for Your Codebase in 5 Easy Steps](https://medium.com/google-cloud/build-a-rag-system-for-your-codebase-in-5-easy-steps-a3506c10599b)*
 
-### 3. Shortcomings of Existing Approaches
+## 3. Shortcomings of Existing Approaches
 
 Despite the hype, most of these solutions fall short due to two core issues:
 
-#### Naive Chunking
+### Naive Chunking
 
 Code is often chunked as if it were prose—i.e., split by lines, tokens, or sentences—without understanding semantic units like functions or classes.
 
-#### Language Mismatch
+### Language Mismatch
 
 Code is written in programming languages. Questions are asked in natural language (usually English). Bridging the semantic gap between the two is non-trivial, yet most implementations ignore it entirely.
 
-### 4. Problems We Solve
+## 4. Problems We Solve
 
 * True semantic understanding of code
 * Bridging code and natural language for Q\&A
 
-### 5. Our Solution
+## 5. Our Solution
 
 We solve the two core problems by introducing **Hybrid Semantic Chunking**:
 
-#### Semantic Chunking with CodeSplitter
+### Semantic Chunking with CodeSplitter
 
 We use LlamaIndex's CodeSplitter to break the code into semantically meaningful units—functions and classes—instead of arbitrary text blocks.
 
-#### Hybrid Chunk Enrichment with LLMs
+### Hybrid Chunk Enrichment with LLMs
 
 Each code chunk is passed through an LLM that generates a structured, natural-language summary, including:
 
@@ -46,7 +46,7 @@ Each code chunk is passed through an LLM that generates a structured, natural-la
 
 These enriched summaries are combined with the original code to form hybrid chunks, which are embedded and stored in a vector database for retrieval and question answering.
 
-### 6. Tech Stack
+## 6. Tech Stack
 
 | Purpose                 | Library / Tool            |
 | ----------------------- | ------------------------- |
@@ -57,7 +57,7 @@ These enriched summaries are combined with the original code to form hybrid chun
 | LLM (for summarization) | Gemini Flash (API)        |
 | Chunk Cache Format      | JSONL                     |
 
-### 7. Non-Functional Requirements Met
+## 7. Non-Functional Requirements Met
 
 * Local embeddings to reduce external API costs
 * Local vector store using ChromaDB for efficient, persistent storage
@@ -70,7 +70,7 @@ These enriched summaries are combined with the original code to form hybrid chun
 
 ### 8. Architectural and Design Choices Explained
 
-#### 8.1. Procedural (Functional) Architecture
+### 8.1. Procedural (Functional) Architecture
 
 **Decision:** The core pipeline (`pipeline.py`) is implemented using a procedural, function-driven approach.
 
@@ -85,7 +85,7 @@ These enriched summaries are combined with the original code to form hybrid chun
 * **Focus on Core RAG Logic**
 * **Evolution Path to OOP if needed (see enhancements)**
 
-#### 8.2. Core RAG Framework: LlamaIndex
+### 8.2. Core RAG Framework: LlamaIndex
 
 **Components Used:**
 
@@ -103,7 +103,7 @@ These enriched summaries are combined with the original code to form hybrid chun
 * CodeSplitter for syntactic chunking
 * Provenance tracking via `source_nodes`
 
-#### 8.3. Embedding Model: nomic-embed-text-v1.5 (default config uses for efficiency & baseline - all-MiniLM-L6-v2 )
+### 8.3. Embedding Model: nomic-embed-text-v1.5 (default config uses for efficiency & baseline - all-MiniLM-L6-v2 )
 
 **Interface:** `llama_index.embeddings.huggingface.HuggingFaceEmbedding`
 
@@ -114,7 +114,7 @@ These enriched summaries are combined with the original code to form hybrid chun
 * Local execution and open-source
 * add `trust_remote_code=True` for model compatibility
 
-#### 8.4. Language Model (LLM): Google Gemini Flash
+### 8.4. Language Model (LLM): Google Gemini Flash
 
 **Interface:** `llama_index.llms.google_genai.GoogleGenAI`
 
@@ -125,7 +125,7 @@ These enriched summaries are combined with the original code to form hybrid chun
 * Effective for summarization and Q\&A
 * Free tier for prototyping
 
-#### 8.5. Vector Store: ChromaDB
+### 8.5. Vector Store: ChromaDB
 
 **Interfaces:**
 
@@ -138,7 +138,7 @@ These enriched summaries are combined with the original code to form hybrid chun
 * Persistence across runs
 * Seamless LlamaIndex integration
 
-#### 8.6. Configuration & Environment Management
+### 8.6. Configuration & Environment Management
 
 **Libraries:** `python-dotenv`
 **Files:** `config.py`, `constants.py`, `.env`
@@ -149,7 +149,7 @@ These enriched summaries are combined with the original code to form hybrid chun
 * Centralized configuration
 * Readability and maintainability
 
-#### 8.7. Python Standard Libraries
+### 8.7. Python Standard Libraries
 
 **Libraries:** `pathlib`, `logging`, `json`, `hashlib`, `os`, `subprocess`, `time`, `random`
 

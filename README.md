@@ -42,8 +42,8 @@ Follow these steps to set up the project locally.
 ### 1. Clone the Repository
 
 ```bash
-git clone [repository-url](https://github.com/bsbhadwal/rag_qa_pipeline.git)
-cd <repository-directory>
+git clone https://github.com/bsbhadwal/rag_qa_pipeline.git
+cd rag_qa_pipeline
 ```
 
 ### 2. Create a Virtual Environment

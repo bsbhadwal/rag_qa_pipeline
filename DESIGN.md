@@ -291,6 +291,7 @@ chunk_file would internally use the correct LlamaIndex CodeSplitter.
     initialize_components(config)
     build_or_load_index(repo_url: str, force_refresh: bool = False): Would use CodebaseManager, CodeChunker, and VectorStoreManager.
     answer_question(question_text: str) -> LlamaResponse: Would use RAGQueryEngine.
+
 ---
 
 **Note:**
@@ -308,4 +309,5 @@ Total time to completion : 1/2 allocated day(s) or 8 hrs (focussed time)
 4. Coding - 2.5 hours
 5. AI - code validation/fixes and document generation - 1 hour
 
-- received on 30 May 2000 hours | checked-in 31 May 2200 hours 
+- received on 30 May 2000 hours | checked-in 31 May 2200 hours.
+- Tested instructions/code on Fedora 42 running Python 3.13.3 (N100/16GB) & Debian 12 running Python 3.11.2 (i3/8GB).2. Success.
